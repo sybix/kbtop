@@ -1,0 +1,44 @@
+[default]
+#Module to use
+module=load_average
+#Verbosity
+verbose=False
+#Time to sleep bofore 2 check
+daemon_time=3
+#Start with turn off led and turn on with a fade
+fade_on_start=True
+#fade color, default is low_color
+color= purple
+#Time betwteen two level of fade
+fade_time=.1
+model=clevo
+
+[module.thermal]
+temp_file = /sys/devices/virtual/hwmon/hwmon0/temp1_input
+max_value=120
+low_color = blue
+medium_color = purple
+high_color = red
+
+[module.load_average]
+max_value=8
+low_color = green
+medium_color = yellow
+high_color = red
+
+[module.memory]
+#Max value in MB
+max_value=8192
+low_color = green
+medium_color = yellow
+high_color = red
+#Ignore cahched memory
+ignore_cached = False
+
+[model.clevo]
+color_cmd_left = "/sys/devices/platform/clevo_wmi/kbled/left"
+color_cmd_middle = "/sys/devices/platform/clevo_wmi/kbled/middle"
+color_cmd_right = "/sys/devices/platform/clevo_wmi/kbled/right"
+brightness_cmd = "/sys/devices/platform/clevo_wmi/kbled/brightness"
+kernel_module = clevo-wmi
+load_kernel_module = True

@@ -1,0 +1,147 @@
+#!/usr/bin/python
+
+#TODO 
+# Add module
+#	Batery
+#	Network speed
+# Desactivate & restore default color
+# clean exit 
+# Change module while running
+# generate sudoersfile ?
+# Configure number of led
+# one led = one module ?
+
+import time
+import os, sys
+import subprocess
+import configparser
+from modules import *
+
+#######################################################################
+###                Default config                                   ###
+#######################################################################
+#Color on startup fade
+color="green"
+#fade stuff
+fade_on_start=True
+fade_time=.3
+
+daemon_time=3
+module_name='load_average'
+verbose=True
+
+#Value for red/red/red
+max_value=8
+
+#Theme
+low_color = 'green'
+medium_color = 'yellow'
+high_color = 'red'
+#avaible color
+colors = {
+	'blue':'0001',
+	'red':'0010',
+	'purple':'0011',
+	'yellow':'0110',
+	'green':'0100',
+	'cyan':'0101',
+	'white':'0111',
+	'off':'0000'
+}
+#######################################################################
+###               End Default config                                ###
+#######################################################################
+
+#Get config from config file
+config = configparser.ConfigParser()
+config.read(os.getenv("HOME")+'/.config/kbtop/config')
+default=config['default']
+verbose=default.getboolean('verbose')
+module_name=default['module']
+try:
+	color=default['color']
+except:
+	if verbose:
+		print("no default color, use low_color\n")
+		color=low_color
+fade_on_start=default.getboolean('fade_on_start')
+fade_time=default.getfloat('fade_time')
+#max_value=int(default['max_value'])
+daemon_time=int(default['daemon_time'])
+model=default['model']
+#Module config
+module_config = config['module.'+module_name]
+max_value=float(module_config['max_value'])
+low_color = module_config['low_color']
+medium_color = module_config['medium_color']
+high_color =  module_config['high_color']
+
+#Model config
+proc_file=config['model.'+model]
+module_kernel_name = proc_file['kernel_module']
+load_kernel_module = proc_file.getboolean('load_kernel_module')
+color_cmd_right = "echo %s | sudo tee " + proc_file['color_cmd_right']
+color_cmd_middle = "echo %s | sudo tee " + proc_file['color_cmd_middle']
+color_cmd_left = "echo %s | sudo tee " + proc_file['color_cmd_left']
+brightness_cmd = "echo %s | sudo tee " + proc_file['brightness_cmd']
+
+def set_color(left,middle,right):
+	subprocess.call(color_cmd_left%(colors[left]),shell=True)
+	subprocess.call(color_cmd_middle%(colors[middle]),shell=True)
+	subprocess.call(color_cmd_right%(colors[right]),shell=True)
+
+
+if not verbose:
+	color_cmd_left += " 1> /dev/null"
+	color_cmd_middle += " 1> /dev/null"
+	color_cmd_right += " 1> /dev/null"
+	brightness_cmd += " 1> /dev/null"
+
+if load_kernel_module:
+	subprocess.call("sudo modprobe "+module_kernel_name,shell=True)
+set_color(color,color,color)
+
+if fade_on_start:
+	for i in range(10):
+		subprocess.call(brightness_cmd%(i),shell=True)
+		time.sleep(fade_time)
+
+last_value=-1
+if verbose:
+	print("Module in use : "+module_name+"\n")
+while 1:
+	#load module
+	try:
+		module=globals()[module_name]
+		cur_value=module(module_config)
+	except:
+		sys.stderr.write("Module "+module_name+" not found\n")
+		sys.stderr.write("Exit\n")
+		sys.exit(10)
+	if verbose:
+		print(cur_value)
+	if 0 <= float(cur_value) <= max_value/8 and last_value != 0:
+		last_value = 0
+		set_color(low_color,low_color,low_color)
+	elif (max_value/8) <= float(cur_value) <= (max_value/8)*2 and last_value != 1:
+		last_value = 1
+		set_color(low_color,low_color,medium_color)
+	elif (max_value/8)*2 <= float(cur_value) <= (max_value/8)*3 and last_value != 2:
+		last_value = 2
+		set_color(low_color,medium_color,medium_color)
+	elif (max_value/8)*3 <= float(cur_value) <= (max_value/8)*4 and last_value != 3:
+		last_value = 3
+		set_color(medium_color,medium_color,medium_color)
+	elif (max_value/8)*4 <= float(cur_value) <= (max_value/8)*5 and last_value!= 4:
+		last_value = 4
+		set_color(medium_color,medium_color,high_color)
+	elif (max_value/8)*5 <= float(cur_value) <= (max_value/8)*6 and last_value != 5:
+		last_value = 5
+		set_color(medium_color,medium_color,high_color)
+	elif (max_value/8)*6 <= float(cur_value) <= (max_value/8)*7 and last_value != 6:
+		last_value = 6
+		set_color(medium_color,high_color,high_color)
+	elif float(cur_value) >= max_value and last_value != 7:
+		last_value = 7
+		set_color(high_color,high_color,high_color)
+	time.sleep(daemon_time)

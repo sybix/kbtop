@@ -1,0 +1,46 @@
+kbtop is an application to change the colors of your keyboard when your processors are
+on load. I code this with a clevo laptop, if you have a laptop with 3 led, and configure kbtop for this please send me your model.config.
+
+orinal repo is https://git.sybix.fr/sybix/kbtop
+Installation
+------------
+* Make sure you have python3+
+
+python -V
+Python 3.3.3
+
+* Configure your WM to start kbtop
+* Copy config to ~/.config/kbtop
+* Configure kbtop according to your need and configuration
+* You need sudo to install and configure sudo like this (Replace file location
+and kernel module):
+
+#Configure rules
+Cmnd_Alias KBTOP = /sbin/modprobe clevo-wmi
+Cmnd_Alias KBTOP_SETCOLORL = /usr/bin/tee /sys/devices/platform/clevo_wmi/kbled/left
+Cmnd_Alias KBTOP_SETCOLORM = /usr/bin/tee /sys/devices/platform/clevo_wmi/kbled/middle
+Cmnd_Alias KBTOP_SETCOLORR = /usr/bin/tee /sys/devices/platform/clevo_wmi/kbled/right
+Cmnd_Alias KBTOP_SETBR =  /usr/bin/tee /sys/devices/platform/clevo_wmi/kbled/brightness
+#Apply rules to user
+user ALL= NOPASSWD: KBTOP
+user ALL= NOPASSWD: KBTOP_SETCOLOR
+user ALL= NOPASSWD: KBTOP_SETCOLORL
+user ALL= NOPASSWD: KBTOP_SETCOLORM
+user ALL= NOPASSWD: KBTOP_SETCOLORR
+
+* Enjoy
+
+Limitation
+----------
+* Only 3 leds for now
+* You need to be able to control your led separatly
+* Colors are hard coded
+
+Features
+--------
+* Support modules, actualy you have load_average,memory and thermal
+* Easly add your module 
+* Use differents themes for differents module
+* Support differents laptop model with some config
+* Can modprobe the kernel driver
+* It's not a bug! it's a feature
