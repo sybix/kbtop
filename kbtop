@@ -14,7 +14,7 @@
 import time
 import os, sys
 import subprocess
-import configparser
+import configparser,ast
 from modules import *
 
 #######################################################################
@@ -37,17 +37,6 @@ max_value=8
 low_color = 'green'
 medium_color = 'yellow'
 high_color = 'red'
-#avaible color
-colors = {
-	'blue':'0001',
-	'red':'0010',
-	'purple':'0011',
-	'yellow':'0110',
-	'green':'0100',
-	'cyan':'0101',
-	'white':'0111',
-	'off':'0000'
-}
 #######################################################################
 ###               End Default config                                ###
 #######################################################################
@@ -84,6 +73,9 @@ color_cmd_right = "echo %s | sudo tee " + proc_file['color_cmd_right']
 color_cmd_middle = "echo %s | sudo tee " + proc_file['color_cmd_middle']
 color_cmd_left = "echo %s | sudo tee " + proc_file['color_cmd_left']
 brightness_cmd = "echo %s | sudo tee " + proc_file['brightness_cmd']
+
+#d3 = ast.literal_eval(config.get('section3', 'dict3'))
+colors = ast.literal_eval(config.get('model.'+model,'colors'))
 
 def set_color(left,middle,right):
 	subprocess.call(color_cmd_left%(colors[left]),shell=True)

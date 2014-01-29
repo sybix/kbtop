@@ -42,3 +42,13 @@ color_cmd_right = "/sys/devices/platform/clevo_wmi/kbled/right"
 brightness_cmd = "/sys/devices/platform/clevo_wmi/kbled/brightness"
 kernel_module = clevo-wmi
 load_kernel_module = True
+colors = {
+	'blue':'0001',
+	'red':'0010',
+	'purple':'0011',
+	'yellow':'0110',
+	'green':'0100',
+	'cyan':'0101',
+	'white':'0111',
+	'off':'0000'
+	}
